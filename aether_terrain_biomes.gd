@@ -540,10 +540,11 @@ func _scan_pbr_texture_sets(root_path: String) -> Array[Dictionary]:
         base_names[base_name][matched_key] = tex_path
         base_names[base_name]["_path"] = tex_path.get_base_dir()
 
-    # Convert to array, prioritising sets with albedo
+    # Convert to array, prioritizing sets with albedo (or any base color like _diff)
     for key: String in base_names.keys():
         var set_data: Dictionary = base_names[key]
-        if set_data.has("albedo"):
+        # Accept if has albedo OR diff OR color (any base color map)
+        if set_data.has("albedo") or set_data.has("diffuse") or set_data.has("color"):
             sets.append(set_data)
 
     return sets
