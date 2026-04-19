@@ -20,6 +20,8 @@ AetherTerrainBiomes adds a complete biome system to your Terrain3D-based project
 
 ## Installation
 
+### Manual Installation
+
 1. Clone or copy this repository into your Godot project's `addons/` folder:
    ```
    addons/aether_terrain_biomes/
@@ -30,6 +32,28 @@ AetherTerrainBiomes adds a complete biome system to your Terrain3D-based project
    - Find **AetherTerrainBiomes** and click **Enable**
 
 3. Restart Godot if prompted
+
+### AI Agent Installation (for automated setup)
+
+To install this plugin automatically, use these commands:
+
+```bash
+# 1. Navigate to your Godot project's addons directory
+cd your-godot-project/addons
+
+# 2. Clone the plugin repository
+git clone https://github.com/shelbykb2/aether-terrain-biomes.git
+
+# 3. Enable the plugin by adding to project.godot
+# Note: This requires manual enabling in Godot editor UI
+```
+
+For automated project file modification:
+
+```bash
+# Add to your project's .godot folder or use Godot's CLI
+# The plugin will appear in Project > Project Settings > Plugins
+```
 
 ## Usage
 
@@ -101,6 +125,32 @@ All assets from Polyhaven are free CC0 - use them for any purpose without attrib
 
 - Godot 4.x (tested on 4.2+)
 - Terrain3D plugin installed and configured
+
+## For AI Agents
+
+### Quick Install Commands
+
+```bash
+# Clone plugin to addons folder
+git clone https://github.com/shelbykb2/aether-terrain-biomes.git /path/to/your-project/addons/aether_terrain_biomes
+
+# Or if using a submodule
+git submodule add https://github.com/shelbykb2/aether-terrain-biomes.git addons/aether_terrain_biomes
+```
+
+### Enabling the Plugin
+
+AI agents cannot directly enable Godot plugins (requires GUI interaction), so after cloning:
+
+1. Open the Godot project in the editor
+2. Go to **Project > Project Settings > Plugins**
+3. Enable **AetherTerrainBiomes**
+
+### Project Setup Requirements
+
+- Godot 4.x (tested on 4.2+)
+- Terrain3D plugin must be installed and configured in the project
+- Project must have a Terrain3D node in the scene for full functionality
 
 ## License
 
