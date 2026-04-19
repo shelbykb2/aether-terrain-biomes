@@ -709,8 +709,8 @@ func _process_folder_selection(selected: String) -> void:
         return
     
     var res_path := _convert_to_res_path(selected)
-    _panel.set_status("Importing collection...")
-    var result = COLLECTION_IMPORTER.import_collection(res_path, "res://assets")
+    _panel.set_status("Importing asset models...")
+    var result = COLLECTION_IMPORTER.import_asset_models(res_path, true)
     if result.get("ok", false):
         var summary := COLLECTION_IMPORTER.get_summary(result)
         _panel.set_status(summary)

@@ -53,11 +53,13 @@ static func import_terrain_textures(folder: String) -> Dictionary:
 	
 	# Copy textures to terrain folder
 	var copied: int = 0
-	for tex: Dictionary in textures:
-		var src := tex["path"]
-		var name := tex["name"]
-		var dst := "%s/%s.%s" % [TERRAIN_TEXTURES_DIR, name, tex["ext"]]
-		if _copy_file(src, dst):
+	for i: int in range(textures.size()):
+		var tex: Dictionary = textures[i]
+		var src: String = tex.get("path", "")
+		var name: String = tex.get("name", "")
+		var ext: String = tex.get("ext", "png")
+		var dst: String = "%s/%s.%s" % [TERRAIN_TEXTURES_DIR, name, ext]
+		if not src.is_empty() and _copy_file(src, dst):
 			copied += 1
 	
 	result["ok"] = true
