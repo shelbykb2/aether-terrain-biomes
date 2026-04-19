@@ -400,18 +400,22 @@ func _import_and_assign_textures_to_biomes(terrain: Node, texture_root: String) 
 
 
 func _pack_textures_pair(rgb_path: String, a_path: String, output_folder: String, base_name: String) -> String:
-    # Load RGB texture
+    # Load RGB texture with error handling
     var rgb_res: Resource = null
     if not rgb_path.is_empty() and ResourceLoader.exists(rgb_path):
         rgb_res = ResourceLoader.load(rgb_path, "Image", ResourceLoader.CACHE_MODE_IGNORE)
     var rgb_img: Image = rgb_res as Image
-    if rgb_img == null:
+    if rgb_img == null or rgb_img.get_width() == 0:
+        push_warning("Skipping texture (cannot load): " + rgb_path)
         return ""
 
     var a_img: Image = null
     if not a_path.is_empty() and ResourceLoader.exists(a_path):
         var a_res: Resource = ResourceLoader.load(a_path, "Image", ResourceLoader.CACHE_MODE_IGNORE)
         a_img = a_res as Image
+        if a_img == null or a_img.get_width() == 0:
+            push_warning("Skipping alpha texture (cannot load): " + a_path)
+            a_img = null
 
     # Create packed image: RGB + A
     var packed: Image = _create_packed_image(rgb_img, a_img)
