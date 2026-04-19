@@ -1,0 +1,43 @@
+# Godot-specific ignores
+.godot/
+import/
+*.import
+*.translation.*
+*.png.vaj
+*.pck
+*.exe
+*.dll
+*.so
+*.dylib
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Editor-specific
+.vscode/
+.idea/
+*.code-workspace
+
+# Build outputs
+build/
+dist/
+out/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Godot 4 specific
+.godot_version
+project.godot
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/

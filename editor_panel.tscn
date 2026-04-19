@@ -1,0 +1,612 @@
+[gd_scene load_steps=2 format=3 uid="uid://qj0s3qu2la8g"]
+
+[ext_resource type="Script" path="res://addons/aether_terrain_biomes/editor_panel.gd" id="1_panel"]
+
+[node name="AetherTerrainBiomesPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(360, 640)
+script = ExtResource("1_panel")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+
+[node name="Scroll" type="ScrollContainer" parent="Margin"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RootVBox" type="VBoxContainer" parent="Margin/Scroll"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margin/Scroll/RootVBox"]
+layout_mode = 2
+text = "AetherTerrainBiomes"
+
+[node name="Tabs" type="TabContainer" parent="Margin/Scroll/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Simple" type="VBoxContainer" parent="Margin/Scroll/RootVBox/Tabs"]
+layout_mode = 2
+
+[node name="SimpleHint" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Quick iteration: biome pick, basic terrain, generate."
+
+[node name="BiomeToolbar" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+
+[node name="AddBiomeButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/BiomeToolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Biome"
+
+[node name="RemoveBiomeButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/BiomeToolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Biome"
+
+[node name="BiomeList" type="ItemList" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 160)
+
+[node name="BiomePreviewLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Biome Zones Preview"
+
+[node name="BiomePreviewRect" type="TextureRect" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SimpleBiomeGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+columns = 2
+
+[node name="BiomeNameLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+text = "Biome Name"
+
+[node name="BiomeNameEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+
+[node name="TextureIndexLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+text = "Base Texture Index"
+
+[node name="TextureIndexSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 64.0
+step = 1.0
+
+[node name="HeightMultLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+text = "Height Multiplier"
+
+[node name="HeightMultSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid"]
+layout_mode = 2
+min_value = 1.0
+max_value = 512.0
+step = 1.0
+
+[node name="SimpleGenerationGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+columns = 2
+
+[node name="MapSizeLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+text = "Map Size"
+
+[node name="MapSizeSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+min_value = 128.0
+max_value = 4096.0
+step = 128.0
+
+[node name="WorldSizeLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+text = "World Size (m)"
+
+[node name="WorldSizeSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+min_value = 128.0
+max_value = 8192.0
+step = 16.0
+
+[node name="SeedLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+text = "Seed"
+
+[node name="SeedSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Simple/SimpleGenerationGrid"]
+layout_mode = 2
+min_value = -2147483648.0
+max_value = 2147483647.0
+step = 1.0
+
+[node name="QuickActions" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+
+[node name="GenerateButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Generate Terrain"
+
+[node name="ApplySurfaceButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Apply Materials/Assets"
+
+[node name="FlattenButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Flatten Safe Zone"
+
+[node name="ClearButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Clear Biome Masks"
+
+[node name="StatusLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Ready"
+
+[node name="Advanced" type="VBoxContainer" parent="Margin/Scroll/RootVBox/Tabs"]
+layout_mode = 2
+
+[node name="AdvancedHint" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+text = "Advanced tuning: auto-material, blending, texture/asset libraries, spawn tables."
+
+[node name="NoiseGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+columns = 2
+
+[node name="FrequencyLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+text = "Frequency"
+
+[node name="FrequencySpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+min_value = 0.0001
+max_value = 1.0
+step = 0.0001
+
+[node name="OctavesLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+text = "Octaves"
+
+[node name="OctavesSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+min_value = 1.0
+max_value = 12.0
+step = 1.0
+
+[node name="LacunarityLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+text = "Lacunarity"
+
+[node name="LacunaritySpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+min_value = 1.0
+max_value = 4.0
+step = 0.01
+
+[node name="GainLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+text = "Gain"
+
+[node name="GainSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
+[node name="AutoMaterialGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+columns = 2
+
+[node name="DetailTextureLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Detail Texture Index"
+
+[node name="DetailTextureSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = -1.0
+max_value = 64.0
+step = 1.0
+
+[node name="CliffTextureLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Cliff Texture Index"
+
+[node name="CliffTextureSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = -1.0
+max_value = 64.0
+step = 1.0
+
+[node name="BaseTexPathLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Base Texture Path"
+
+[node name="BaseTexPathEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+editable = false
+
+[node name="DetailTexPathLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Detail Texture Path"
+
+[node name="DetailTexPathEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+editable = false
+
+[node name="CliffTexPathLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Cliff Texture Path"
+
+[node name="CliffTexPathEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+editable = false
+
+[node name="TextureStrengthLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Texture Strength"
+
+[node name="TextureStrengthSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
+[node name="SlopeEnabledLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Use Slope Blend"
+
+[node name="SlopeEnabledCheck" type="CheckBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+
+[node name="SlopeStartLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Slope Start (deg)"
+
+[node name="SlopeStartSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 90.0
+step = 0.1
+
+[node name="SlopeEndLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Slope End (deg)"
+
+[node name="SlopeEndSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 90.0
+step = 0.1
+
+[node name="HeightEnabledLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Use Height Blend"
+
+[node name="HeightEnabledCheck" type="CheckBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+
+[node name="HeightStartLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Height Start"
+
+[node name="HeightStartSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = -1024.0
+max_value = 4096.0
+step = 0.1
+
+[node name="HeightEndLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+text = "Height End"
+
+[node name="HeightEndSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid"]
+layout_mode = 2
+min_value = -1024.0
+max_value = 4096.0
+step = 0.1
+
+[node name="AdvancedGenerationGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+columns = 2
+
+[node name="ProceduralBlendLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Procedural Blend"
+
+[node name="ProceduralBlendSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
+[node name="PaintedBlendLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Painted Blend"
+
+[node name="PaintedBlendSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
+[node name="WeightSharpnessLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Weight Sharpness"
+
+[node name="WeightSharpnessSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 1.0
+max_value = 6.0
+step = 0.05
+
+[node name="SpikeThresholdLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Spike Threshold"
+
+[node name="SpikeThresholdSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 200.0
+step = 0.5
+
+[node name="SpikeSoftnessLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Spike Softness"
+
+[node name="SpikeSoftnessSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
+[node name="SmoothingPassesLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+text = "Smoothing Passes"
+
+[node name="SmoothingPassesSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 8.0
+step = 1.0
+
+[node name="TextureLibraryLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Biome Ground Texture Library"
+
+[node name="TextureBrowserGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+columns = 2
+
+[node name="TextureRootLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureBrowserGrid"]
+layout_mode = 2
+text = "Texture Root"
+
+[node name="TextureRootEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureBrowserGrid"]
+layout_mode = 2
+placeholder_text = "res://textures"
+
+[node name="ScanTexturesLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureBrowserGrid"]
+layout_mode = 2
+text = "Texture Scan"
+
+[node name="ScanTexturesButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureBrowserGrid"]
+layout_mode = 2
+text = "Scan Texture Folder"
+
+[node name="AvailableTextureList" type="ItemList" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 120)
+
+[node name="TextureAssignButtons" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+
+[node name="AssignBaseTextureButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Set Base"
+
+[node name="AssignDetailTextureButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Set Detail"
+
+[node name="AssignCliffTextureButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Set Cliff"
+
+[node name="ImportAllTexturesAssignButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Import All Textures & Assign to Biomes"
+
+[node name="SpawnLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+text = "Selected Biome Assets"
+
+[node name="AssetBrowserGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+columns = 2
+
+[node name="AssetRootLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AssetBrowserGrid"]
+layout_mode = 2
+text = "Asset Root"
+
+[node name="AssetRootEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AssetBrowserGrid"]
+layout_mode = 2
+placeholder_text = "res://imported_models"
+
+[node name="ScanAssetsLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AssetBrowserGrid"]
+layout_mode = 2
+text = "Asset Scan"
+
+[node name="ScanAssetsButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/AssetBrowserGrid"]
+layout_mode = 2
+text = "Scan Asset Folder"
+
+[node name="QuickAssetRoots" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+
+[node name="ImportedRootButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Imported"
+
+[node name="PropsRootButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Props"
+
+[node name="FoliageRootButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Foliage"
+
+[node name="RocksRootButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rocks"
+
+[node name="AvailableAssetsList" type="ItemList" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 120)
+
+[node name="ApplySelectedAssetButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+text = "Use Selected Asset"
+
+[node name="SpawnEntryList" type="ItemList" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 110)
+
+[node name="SpawnEditGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+columns = 2
+
+[node name="SpawnScenePathLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+text = "Scene Path"
+
+[node name="SpawnScenePathEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+placeholder_text = "res://props/tree.tscn"
+
+[node name="SpawnMeshIdLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+text = "Terrain Mesh ID"
+
+[node name="SpawnMeshIdSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+min_value = -1.0
+max_value = 1024.0
+step = 1.0
+
+[node name="SpawnDensityLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+text = "Density"
+
+[node name="SpawnDensitySpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 0.05
+step = 0.0001
+
+[node name="SpawnMinScaleLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+text = "Min Scale"
+
+[node name="SpawnMinScaleSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+min_value = 0.05
+max_value = 10.0
+step = 0.01
+
+[node name="SpawnMaxScaleLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+text = "Max Scale"
+
+[node name="SpawnMaxScaleSpin" type="SpinBox" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEditGrid"]
+layout_mode = 2
+min_value = 0.05
+max_value = 10.0
+step = 0.01
+
+[node name="SpawnButtons" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
+layout_mode = 2
+
+[node name="AddUpdateSpawnButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add/Update Asset Entry"
+
+[node name="RemoveSpawnButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Asset Entry"
+
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/BiomeToolbar/AddBiomeButton" to="." method="_on_add_biome_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/BiomeToolbar/RemoveBiomeButton" to="." method="_on_remove_biome_button_pressed"]
+[connection signal="item_selected" from="Margin/Scroll/RootVBox/Tabs/Simple/BiomeList" to="." method="_on_biome_list_item_selected"]
+[connection signal="text_changed" from="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid/BiomeNameEdit" to="." method="_on_biome_name_edit_text_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid/TextureIndexSpin" to="." method="_on_texture_index_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Simple/SimpleBiomeGrid/HeightMultSpin" to="." method="_on_height_mult_spin_value_changed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions/GenerateButton" to="." method="_on_generate_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions/ApplySurfaceButton" to="." method="_on_apply_surface_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/QuickActions/FlattenButton" to="." method="_on_flatten_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/ClearButton" to="." method="_on_clear_button_pressed"]
+
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid/FrequencySpin" to="." method="_on_frequency_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid/OctavesSpin" to="." method="_on_octaves_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid/LacunaritySpin" to="." method="_on_lacunarity_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/NoiseGrid/GainSpin" to="." method="_on_gain_spin_value_changed"]
+
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/DetailTextureSpin" to="." method="_on_detail_texture_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/CliffTextureSpin" to="." method="_on_cliff_texture_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/TextureStrengthSpin" to="." method="_on_texture_strength_spin_value_changed"]
+[connection signal="toggled" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/SlopeEnabledCheck" to="." method="_on_slope_enabled_check_toggled"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/SlopeStartSpin" to="." method="_on_slope_start_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/SlopeEndSpin" to="." method="_on_slope_end_spin_value_changed"]
+[connection signal="toggled" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/HeightEnabledCheck" to="." method="_on_height_enabled_check_toggled"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/HeightStartSpin" to="." method="_on_height_start_spin_value_changed"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AutoMaterialGrid/HeightEndSpin" to="." method="_on_height_end_spin_value_changed"]
+
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/ProceduralBlendSpin" to="." method="_noop"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/PaintedBlendSpin" to="." method="_noop"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/WeightSharpnessSpin" to="." method="_noop"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/SpikeThresholdSpin" to="." method="_noop"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/SpikeSoftnessSpin" to="." method="_noop"]
+[connection signal="value_changed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AdvancedGenerationGrid/SmoothingPassesSpin" to="." method="_noop"]
+
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureBrowserGrid/ScanTexturesButton" to="." method="_on_scan_textures_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons/AssignBaseTextureButton" to="." method="_on_assign_base_texture_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons/AssignDetailTextureButton" to="." method="_on_assign_detail_texture_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons/AssignCliffTextureButton" to="." method="_on_assign_cliff_texture_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/ImportAllTexturesAssignButton" to="." method="_on_import_all_textures_assign_button_pressed"]
+
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/ImportedRootButton" to="." method="_on_imported_root_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/PropsRootButton" to="." method="_on_props_root_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/FoliageRootButton" to="." method="_on_foliage_root_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/RocksRootButton" to="." method="_on_rocks_root_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/AssetBrowserGrid/ScanAssetsButton" to="." method="_on_scan_assets_button_pressed"]
+[connection signal="item_selected" from="Margin/Scroll/RootVBox/Tabs/Advanced/AvailableAssetsList" to="." method="_on_available_assets_list_item_selected"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/ApplySelectedAssetButton" to="." method="_on_apply_selected_asset_button_pressed"]
+[connection signal="item_selected" from="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnEntryList" to="." method="_on_spawn_entry_list_item_selected"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnButtons/AddUpdateSpawnButton" to="." method="_on_add_update_spawn_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/SpawnButtons/RemoveSpawnButton" to="." method="_on_remove_spawn_button_pressed"]
