@@ -364,7 +364,12 @@ func _import_and_assign_textures_to_biomes(terrain: Node, texture_root: String) 
                 packed_paths.append(packed_albedo_path)
                 biome.base_texture_path = packed_albedo_path
                 biome.base_texture_index = slot
-                assets.call("set_texture", slot, load(packed_albedo_path))
+                # Try to load, but don't fail if it's a new file
+                var tex_res: Texture2D = null
+                if FileAccess.file_exists(ProjectSettings.globalize_path(packed_albedo_path)):
+                    tex_res = ResourceLoader.load(packed_albedo_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+                if tex_res != null:
+                    assets.call("set_texture", slot, tex_res)
                 slot += 1
         else:
             biome.base_texture_index = -1
@@ -378,14 +383,20 @@ func _import_and_assign_textures_to_biomes(terrain: Node, texture_root: String) 
                 packed_paths.append(packed_detail_path)
                 biome.detail_texture_path = packed_detail_path
                 biome.detail_texture_index = slot
-                assets.call("set_texture", slot, load(packed_detail_path))
+                var tex_res: Texture2D = null
+                if FileAccess.file_exists(ProjectSettings.globalize_path(packed_detail_path)):
+                    tex_res = ResourceLoader.load(packed_detail_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+                if tex_res != null:
+                    assets.call("set_texture", slot, tex_res)
                 slot += 1
         else:
             # Fallback: use albedo for detail
             if pbr_set.has("albedo"):
                 biome.detail_texture_path = pbr_set["albedo"]
                 biome.detail_texture_index = slot
-                assets.call("set_texture", slot, load(pbr_set["albedo"]))
+                var tex_res: Texture2D = ResourceLoader.load(pbr_set["albedo"], "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+                if tex_res != null:
+                    assets.call("set_texture", slot, tex_res)
                 slot += 1
             else:
                 biome.detail_texture_index = -1
@@ -460,9 +471,10 @@ func _pack_textures_pair(rgb_path: String, a_path: String, output_folder: String
     var output_path: String = "%s/%s.png" % [output_folder.trim_suffix("/"), base_name]
     var save_err: Error = packed.save_png(output_path)
     if save_err != OK:
+        push_warning("Failed to save: " + output_path)
         return ""
-
-    # Trigger rescan
+    
+    # Trigger rescan to pick up new files
     call_deferred("_rescan_textures_folder", output_folder)
     return output_path
 
