@@ -5,6 +5,11 @@ class_name AetherTerrainBiomesPanel
 signal generate_terrain_requested
 signal apply_surface_requested
 signal import_all_textures_assign_requested
+signal import_collection_requested
+signal polyhaven_download_requested(slug: String)
+signal polyhaven_fetch_requested(search: String, category: String, asset_type: String)
+signal polyhaven_fetch_collections_requested
+signal polyhaven_download_collection_requested(slug: String)
 signal clear_all_requested
 signal flatten_safe_zone_requested
 signal add_biome_requested
@@ -56,8 +61,28 @@ var _spawn_max_scale_spin: SpinBox
 var _available_asset_paths: PackedStringArray = []
 var _available_texture_paths: PackedStringArray = []
 
+# Polyhaven UI controls
+var _polyhaven_search_edit: LineEdit
+var _polyhaven_category_option: OptionButton
+var _polyhaven_result_list: ItemList
+var _polyhaven_info_label: Label
+var _polyhaven_preview_image: TextureRect
+var _polyhaven_type_option: OptionButton
+var _polyhaven_results: Dictionary = {}  # slug -> {name, tags}
+var _polyhaven_selected_slug: String = ""
+var _polyhaven_preview_http: HTTPRequest
+var _polyhaven_preview_loading: bool = false
+
 const ASSET_SCENE_EXTENSIONS := ["tscn", "scn", "glb"]
 const GROUND_TEXTURE_EXTENSIONS := ["png", "jpg", "jpeg", "webp", "exr", "ktx", "dds", "tga"]
+
+const POLYHAVEN_CATEGORIES := [
+	"", "brick", "concrete", "fabric", "ground", "marble", "metal",
+	"organic", "plaster", "rock", "roof", "terrazzo", "tile", "wood",
+	"terrain",  # Add terrain category
+]
+
+const POLYHAVEN_ASSET_TYPES := ["textures", "hdris", "models", "collections"]
 
 var _biomes: Array[AetherBiomeResource] = []
 var _selected_biome_idx: int = -1
@@ -110,6 +135,14 @@ func _resolve_nodes() -> bool:
     _spawn_min_scale_spin = find_child("SpawnMinScaleSpin", true, false) as SpinBox
     _spawn_max_scale_spin = find_child("SpawnMaxScaleSpin", true, false) as SpinBox
 
+    # Polyhaven nodes
+    _polyhaven_search_edit = find_child("PolyhavenSearchEdit", true, false) as LineEdit
+    _polyhaven_category_option = find_child("PolyhavenCategoryOption", true, false) as OptionButton
+    _polyhaven_result_list = find_child("PolyhavenResultList", true, false) as ItemList
+    _polyhaven_info_label = find_child("PolyhavenInfoLabel", true, false) as Label
+    _polyhaven_preview_image = find_child("PolyhavenPreviewImage", true, false) as TextureRect
+    _polyhaven_type_option = find_child("PolyhavenTypeOption", true, false) as OptionButton
+
     return _biome_list != null \
         and _map_size_spin != null \
         and _world_size_spin != null \
@@ -150,7 +183,8 @@ func _resolve_nodes() -> bool:
         and _spawn_mesh_id_spin != null \
         and _spawn_density_spin != null \
         and _spawn_min_scale_spin != null \
-        and _spawn_max_scale_spin != null
+        and _spawn_max_scale_spin != null \
+        and _polyhaven_search_edit != null
 
 
 func setup_default_values() -> void:
@@ -179,6 +213,23 @@ func setup_default_values() -> void:
     _status_label.text = "Ready"
     _scan_available_textures()
     _scan_available_assets()
+    _init_polyhaven_category_dropdown()
+
+
+func _init_polyhaven_category_dropdown() -> void:
+    if _polyhaven_category_option == null:
+        return
+    _polyhaven_category_option.clear()
+    for cat: String in POLYHAVEN_CATEGORIES:
+        _polyhaven_category_option.add_item(cat if cat != "" else "All Categories")
+    # Initialize type dropdown
+    if _polyhaven_type_option != null:
+        _polyhaven_type_option.clear()
+        _polyhaven_type_option.add_item("Textures", 0)
+        _polyhaven_type_option.add_item("HDRIs", 1)
+        _polyhaven_type_option.add_item("3D Models", 2)
+        _polyhaven_type_option.add_item("Collections", 3)
+        _polyhaven_type_option.selected = 0  # Default to Textures
 
 
 func set_biome_list(biomes: Array[AetherBiomeResource]) -> void:
@@ -833,3 +884,168 @@ func _on_flatten_button_pressed() -> void:
 
 func _noop(_value: Variant = null) -> void:
     pass
+
+
+func _on_import_collection_button_pressed() -> void:
+    emit_signal("import_collection_requested")
+
+
+# ========== POLYHAVEN HANDLERS ==========
+
+func _on_fetch_polyhaven_button_pressed() -> void:
+    if _polyhaven_search_edit == null or _polyhaven_category_option == null:
+        return
+    var search_text: String = _polyhaven_search_edit.text.strip_edges()
+    var category_idx: int = _polyhaven_category_option.selected
+    var category: String = ""
+    if category_idx >= 0 and category_idx < POLYHAVEN_CATEGORIES.size():
+        category = POLYHAVEN_CATEGORIES[category_idx]
+    
+    # Get asset type (textures, hdris, models, collections)
+    var asset_type: String = "textures"
+    if _polyhaven_type_option != null:
+        var type_idx: int = _polyhaven_type_option.selected
+        match type_idx:
+            0: asset_type = "textures"
+            1: asset_type = "hdris"
+            2: asset_type = "models"
+            3: asset_type = "collections"
+    
+    # Collections - open browser directly since API doesn't support them
+    if asset_type == "collections":
+        set_status("Opening collections page in browser...")
+        OS.shell_open("https://polyhaven.com/collections")
+        return
+    
+    # Use API for textures, hdris, and models
+    set_status("Fetching " + asset_type + " from Polyhaven...")
+    emit_signal("polyhaven_fetch_requested", search_text, category, asset_type)
+
+
+func _on_polyhaven_search_text_changed(new_text: String) -> void:
+    # Filter results as user types
+    _filter_polyhaven_results(new_text)
+
+
+func _on_polyhaven_result_item_selected(index: int) -> void:
+    if _polyhaven_result_list == null or index < 0:
+        return
+    var items: Array = _polyhaven_result_list.get_item_text(index).split(" | ")
+    if items.size() >= 2:
+        _polyhaven_selected_slug = items[0]
+        _polyhaven_info_label.text = "Selected: " + items[1]
+        set_status("Ready to download: " + _polyhaven_selected_slug)
+        # Load preview image
+        _load_polyhaven_preview(_polyhaven_selected_slug)
+
+
+func _on_download_polyhaven_button_pressed() -> void:
+    if _polyhaven_selected_slug.is_empty():
+        set_status("Select a texture from the list first.", true)
+        return
+    
+    # Open download page in browser - more reliable than API
+    var asset_type: String = "textures"
+    if _polyhaven_type_option != null:
+        match _polyhaven_type_option.selected:
+            0: asset_type = "textures"
+            1: asset_type = "hdris"
+            2: asset_type = "models"
+            3: asset_type = "collections"
+    
+    set_status("Opening download page in browser...")
+    var url := "https://polyhaven.com/a/%s" % _polyhaven_selected_slug
+    OS.shell_open(url)
+
+
+func update_polyhaven_results(textures: Dictionary) -> void:
+    _polyhaven_results = textures
+    _polyhaven_result_list.clear()
+    for slug: String in textures.keys():
+        var data: Dictionary = textures[slug]
+        var name: String = data.get("name", slug)
+        _polyhaven_result_list.add_item("%s | %s" % [slug, name])
+    set_status("Found %d textures" % textures.size())
+
+
+func _on_open_browser_button_pressed() -> void:
+    if _polyhaven_selected_slug.is_empty():
+        set_status("Select an item from the list first.", true)
+        return
+    
+    # Determine which type to open based on selection
+    var asset_type: String = "textures"
+    if _polyhaven_type_option != null:
+        match _polyhaven_type_option.selected:
+            0: asset_type = "textures"
+            1: asset_type = "hdris"
+            2: asset_type = "models"
+            3: asset_type = "collections"
+    
+    # Open appropriate Polyhaven page in default browser
+    var url := "https://polyhaven.com/a/%s" % _polyhaven_selected_slug
+    OS.shell_open(url)
+    set_status("Opened: " + url)
+
+
+func _filter_polyhaven_results(search_text: String) -> void:
+    if _polyhaven_result_list == null:
+        return
+    _polyhaven_result_list.clear()
+    var lower_search: String = search_text.to_lower()
+    for slug: String in _polyhaven_results.keys():
+        var data: Dictionary = _polyhaven_results[slug]
+        var name: String = data.get("name", slug).to_lower()
+        if lower_search.is_empty() or name.find(lower_search) >= 0:
+            var display_name: String = _polyhaven_results[slug].get("name", slug)
+            _polyhaven_result_list.add_item("%s | %s" % [slug, display_name])
+
+
+func _load_polyhaven_preview(slug: String) -> void:
+    if slug.is_empty():
+        return
+    # Clear current preview
+    if _polyhaven_preview_image != null:
+        _polyhaven_preview_image.texture = null
+    set_status("Loading preview...")
+    # Create HTTP request if needed
+    if _polyhaven_preview_http == null:
+        _polyhaven_preview_http = HTTPRequest.new()
+        add_child(_polyhaven_preview_http)
+        _polyhaven_preview_http.request_completed.connect(_on_preview_download_completed)
+        _polyhaven_preview_http.max_redirects = 3  # Follow redirects
+    # Build preview URL - correct format per Polyhaven API docs
+    var preview_url := "https://cdn.polyhaven.com/asset_img/thumbs/%s.png?width=285&height=285" % slug
+    var headers := PackedStringArray([
+        "User-Agent: AetherTerrainBiomes/1.0 (Godot)",
+    ])
+    _polyhaven_preview_loading = true
+    _polyhaven_selected_slug = slug  # Store current slug
+    var err := _polyhaven_preview_http.request(preview_url, headers, HTTPClient.METHOD_GET)
+    if err != OK:
+        set_status("Failed to load preview", true)
+        _polyhaven_preview_loading = false
+
+
+func _on_preview_download_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+    _polyhaven_preview_loading = false
+    if result != HTTPRequest.RESULT_SUCCESS:
+        set_status("Preview download failed: " + str(result), true)
+        return
+    if response_code != 200:
+        set_status("Preview not available (code: " + str(response_code) + ")", true)
+        return
+    # Create image from downloaded data
+    var image := Image.new()
+    var err := image.load_jpg_from_buffer(body)
+    if err != OK:
+        # Try PNG
+        err = image.load_png_from_buffer(body)
+    if err != OK:
+        set_status("Failed to load preview image", true)
+        return
+    # Create texture and display
+    var texture := ImageTexture.create_from_image(image)
+    if _polyhaven_preview_image != null:
+        _polyhaven_preview_image.texture = texture
+    set_status("Preview loaded - Ready to download: " + _polyhaven_selected_slug)

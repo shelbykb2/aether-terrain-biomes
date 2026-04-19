@@ -16,6 +16,7 @@ AetherTerrainBiomes adds a complete biome system to your Terrain3D-based project
 - **Asset Spawning**: Define spawn entries for props, foliage, and rocks per biome
 - **Safe Zone Flattening**: Flatten areas around player spawn points (e.g., ship landing zone)
 - **Live Preview**: Real-time biome dominance preview as you adjust parameters
+- **Polyhaven Integration**: Browse and download textures directly from Polyhaven (free CC0 assets)
 
 ## Installation
 
@@ -78,6 +79,23 @@ AetherTerrainBiomes adds a complete biome system to your Terrain3D-based project
 Each biome can use slope-based and height-based texture blending:
 - **Slope**: Blend from base to cliff texture at specified angle thresholds
 - **Height**: Blend based on terrain height in meters
+
+### Polyhaven Integration
+
+The plugin includes integration with [Polyhaven](https://polyhaven.com), a free CC0 3D asset library with thousands of textures, HDRIs, 3D models, and complete scene collections.
+
+1. **Browse Online**: Click the asset type dropdown (Textures/HDRIs/Models/Collections) and "Browse Online" to open Polyhaven in your browser
+2. **Select Asset**: Choose an asset type and click "Fetch Textures" to browse available assets
+3. **Preview**: Select any asset to see a preview image in the panel
+4. **Download**: Click "Download Selected" to open the asset's download page in your browser
+
+**Supported Asset Types**:
+- **Textures**: PBR material textures (diffuse, roughness, normal, etc.)
+- **HDRIs**: High dynamic range environment maps
+- **Models**: 3D models
+- **Collections**: Complete 3D scene collections (Blender/Unreal projects)
+
+All assets from Polyhaven are free CC0 - use them for any purpose without attribution.
 
 ## Requirements
 

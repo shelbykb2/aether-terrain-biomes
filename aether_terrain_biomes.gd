@@ -3,11 +3,24 @@ extends EditorPlugin
 
 const PANEL_SCENE := preload("res://addons/aether_terrain_biomes/editor_panel.tscn")
 const ICON_PATH := "res://addons/aether_terrain_biomes/icons/aether_biome.svg"
+const COLLECTION_IMPORTER := preload("res://addons/aether_terrain_biomes/collection_importer.gd")
+const POLYHAVEN_IMPORTER := preload("res://addons/aether_terrain_biomes/polyhaven_importer.gd")
+
+const POLYHAVEN_API_URL := "https://api.polyhaven.com"
+const POLYHAVEN_USER_AGENT := "AetherTerrainBiomes/1.0 (Godot)"
 
 var _panel: AetherTerrainBiomesPanel
 var _generator := AetherBiomeGenerator.new()
 var _painter := AetherBiomePainter.new()
 var _biomes: Array[AetherBiomeResource] = []
+var _folder_dialog_path := ""
+
+# Polyhaven API state
+var _polyhaven_http: HTTPRequest
+var _polyhaven_textures: Dictionary = {}
+var _polyhaven_state: String = ""  # "idle", "fetching_list", "fetching_details", "downloading"
+var _pending_downloads: Array = []
+var _current_download: Dictionary = {}
 
 
 func _enter_tree() -> void:
@@ -19,6 +32,11 @@ func _enter_tree() -> void:
     _panel.add_biome_requested.connect(_on_add_biome_requested)
     _panel.remove_biome_requested.connect(_on_remove_biome_requested)
     _panel.import_all_textures_assign_requested.connect(_on_import_all_textures_assign_requested)
+    _panel.import_collection_requested.connect(_on_import_collection_requested)
+    _panel.polyhaven_download_requested.connect(_on_polyhaven_download_requested)
+    _panel.polyhaven_fetch_requested.connect(_on_polyhaven_fetch_requested)
+    _panel.polyhaven_fetch_collections_requested.connect(_on_polyhaven_fetch_collections_requested)
+    _panel.polyhaven_download_collection_requested.connect(_on_polyhaven_download_collection_requested)
 
     add_control_to_dock(DOCK_SLOT_RIGHT_UL, _panel)
     _create_default_biomes_if_empty()
@@ -618,3 +636,347 @@ func _apply_default_blending_rules(biome: AetherBiomeResource, biome_index: int)
             biome.height_blend_start = 10.0
             biome.height_blend_end = 100.0
             biome.texture_blend_strength = 0.7
+
+
+func _on_import_collection_requested() -> void:
+    _show_folder_picker()
+
+
+var _pending_dialog: EditorFileDialog
+
+func _show_folder_picker() -> void:
+    _pending_dialog = EditorFileDialog.new()
+    _pending_dialog.access = EditorFileDialog.ACCESS_FILESYSTEM
+    _pending_dialog.mode = 0
+    _pending_dialog.title = "Select Poly Haven Collection Folder"
+    add_child(_pending_dialog)
+    _pending_dialog.popup_centered(Vector2(600, 400))
+    _pending_dialog.dir_selected.connect(_on_dir_selected)
+
+
+func _on_dir_selected(path: String) -> void:
+    _pending_dialog.queue_free()
+    _process_folder_selection(path)
+
+
+func _process_folder_selection(selected: String) -> void:
+    if selected.is_empty() or selected == "":
+        _panel.set_status("Import cancelled")
+        return
+    
+    var res_path := _convert_to_res_path(selected)
+    _panel.set_status("Importing collection...")
+    var result = COLLECTION_IMPORTER.import_collection(res_path, "res://assets")
+    if result.get("ok", false):
+        var summary := COLLECTION_IMPORTER.get_summary(result)
+        _panel.set_status(summary)
+    else:
+        _panel.set_status("Import failed: " + result.get("error", "Unknown"), true)
+
+
+func _convert_to_res_path(absolute_path: String) -> String:
+    var project_path := ProjectSettings.globalize_path("res://")
+    
+    # Check if in project
+    if absolute_path.begins_with(project_path):
+        return "res://" + absolute_path.substr(project_path.length()).trim_prefix("/")
+    
+    # Check if in Downloads
+    var home := OS.get_environment("USERPROFILE")
+    if home.is_empty():
+        home = OS.get_environment("HOME")
+    var downloads := home + "/Downloads"
+    
+    if absolute_path.begins_with(downloads):
+        return "res://downloads/" + absolute_path.substr(downloads.length()).trim_prefix("/")
+    
+    # Copy external folder to project
+    var import_folder := "res://imports"
+    var abs_dest := ProjectSettings.globalize_path(import_folder)
+    DirAccess.make_dir_recursive_absolute(abs_dest)
+    _copy_folder(absolute_path, abs_dest)
+    return import_folder
+
+
+func _copy_folder(from: String, to: String) -> void:
+    var dir := DirAccess.open(from)
+    if dir == null:
+        return
+    dir.list_dir_begin()
+    var name := dir.get_next()
+    while not name.is_empty():
+        if name.begins_with("."):
+            name = dir.get_next()
+            continue
+        var src := "%s/%s" % [from, name]
+        var dst := "%s/%s" % [to, name]
+        if dir.current_is_dir():
+            DirAccess.make_dir_recursive_absolute(dst)
+            _copy_folder(src, dst)
+        else:
+            var ext := name.get_extension().to_lower()
+            if ext == "glb" or ext == "gltf" or ext == "png":
+                var src_f := FileAccess.open(src, FileAccess.READ)
+                if src_f:
+                    var dst_f := FileAccess.open(dst, FileAccess.WRITE)
+                    if dst_f:
+                        dst_f.resize(src_f.get_length())
+                        dst_f.store_buffer(src_f.get_buffer(src_f.get_length()))
+                        dst_f.close()
+                    src_f.close()
+        name = dir.get_next()
+    dir.list_dir_end()
+
+
+# ========== POLYHAVEN API DOWNLOADER ==========
+
+func _on_polyhaven_download_requested(slug: String) -> void:
+    if slug.is_empty():
+        _panel.set_status("Select a texture from the Polyhaven list first.", true)
+        return
+    
+    _panel.set_status("Fetching texture details...")
+    _init_polyhaven_http()
+    _polyhaven_state = "fetching_details"
+    
+    var url := "%s/files/%s?t[]=textures" % [POLYHAVEN_API_URL, slug]
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _polyhaven_http.request(url, headers, HTTPClient.METHOD_GET)
+
+
+func _init_polyhaven_http() -> void:
+    if _polyhaven_http == null:
+        _polyhaven_http = HTTPRequest.new()
+        add_child(_polyhaven_http)
+        _polyhaven_http.request_completed.connect(_on_polyhaven_request_completed)
+
+
+func _on_polyhaven_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+    if result != HTTPRequest.RESULT_SUCCESS:
+        _panel.set_status("API request failed: " + str(result), true)
+        _polyhaven_state = "idle"
+        return
+    
+    if response_code != 200:
+        _panel.set_status("API error: " + str(response_code), true)
+        _polyhaven_state = "idle"
+        return
+    
+    var json := JSON.new()
+    var parse_err := json.parse(body.get_string_from_utf8())
+    if parse_err != OK:
+        _panel.set_status("JSON parse error", true)
+        _polyhaven_state = "idle"
+        return
+    
+    var response: Dictionary = json.get_data()
+    
+    match _polyhaven_state:
+        "fetching_list":
+            _handle_polyhaven_list_response(response)
+        "fetching_details":
+            _handle_polyhaven_details_response(response)
+        "downloading":
+            _handle_polyhaven_download_complete(response_code, body)
+        "fetching_collections":
+            _handle_collections_response(response)
+        "fetching_collection_details":
+            _handle_collection_details_response(response)
+        "downloading_collection":
+            _handle_collection_download_complete(response_code, body, _current_download.get("format", "blender"))
+
+
+func _handle_polyhaven_list_response(response: Dictionary) -> void:
+    _polyhaven_textures.clear()
+    for slug: String in response.keys():
+        var asset: Dictionary = response[slug]
+        var name: String = asset.get("name", slug)
+        var tags: PackedStringArray = asset.get("tags", PackedStringArray())
+        _polyhaven_textures[slug] = {"name": name, "tags": tags}
+    _polyhaven_state = "idle"
+    _panel.set_status("Found %d textures from Polyhaven" % _polyhaven_textures.size())
+    _panel.update_polyhaven_results(_polyhaven_textures)
+
+
+func _handle_polyhaven_details_response(response: Dictionary) -> void:
+    var details := POLYHAVEN_IMPORTER.parse_asset_details(response, 2)
+    if not details.get("ok", false):
+        _panel.set_status("Error: " + details.get("error", "Unknown"), true)
+        _polyhaven_state = "idle"
+        return
+    
+    var slug: String = details.get("slug", "")
+    var maps: Dictionary = details.get("maps", {})
+    
+    _pending_downloads.clear()
+    for map_type: String in maps.keys():
+        _pending_downloads.append({
+            "type": map_type,
+            "url": maps[map_type].get("url", ""),
+        })
+    
+    _panel.set_status("Downloading %d maps..." % _pending_downloads.size())
+    _process_next_polyhaven_download(slug)
+
+
+func _process_next_polyhaven_download(slug: String) -> void:
+    if _pending_downloads.is_empty():
+        _panel.set_status("Downloaded: %s" % slug)
+        _polyhaven_state = "idle"
+        return
+    
+    _polyhaven_state = "downloading"
+    var download: Dictionary = _pending_downloads.pop_front()
+    var url: String = download.get("url", "")
+    
+    _init_polyhaven_http()
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _current_download = download
+    _current_download["slug"] = slug
+    _polyhaven_http.request(url, headers, HTTPClient.METHOD_GET)
+
+
+func _handle_polyhaven_download_complete(response_code: int, body: PackedByteArray) -> void:
+    if response_code != 200:
+        _panel.set_status("Download failed: " + str(response_code), true)
+        _process_next_polyhaven_download(_current_download.get("slug", ""))
+        return
+    
+    var map_type: String = _current_download.get("type", "unknown")
+    var slug: String = _current_download.get("slug", "")
+    var save_path := "res://textures/polyhaven/%s_%s.png" % [slug, map_type]
+    
+    var abs_dir := ProjectSettings.globalize_path("res://textures/polyhaven")
+    var dir := DirAccess.open("res://")
+    if dir:
+        dir.make_dir_recursive_absolute(abs_dir)
+    
+    if POLYHAVEN_IMPORTER.save_texture_data(body, save_path):
+        _panel.set_status("Saved: %s_%s.png" % [slug, map_type])
+    
+    _process_next_polyhaven_download(slug)
+
+
+func _handle_collection_download_complete(response_code: int, body: PackedByteArray, format: String) -> void:
+    if response_code != 200:
+        _panel.set_status("Download failed: " + str(response_code), true)
+        _polyhaven_state = "idle"
+        return
+    
+    if body.is_empty():
+        _panel.set_status("Downloaded empty file", true)
+        _polyhaven_state = "idle"
+        return
+    
+    # Save to file
+    var slug: String = _current_download.get("slug", "collection")
+    var save_path := "res://imports/polyhaven_collections/%s.zip" % slug
+    
+    var abs_dir := ProjectSettings.globalize_path("res://imports/polyhaven_collections")
+    var dir := DirAccess.open("res://")
+    if dir:
+        dir.make_dir_recursive_absolute(abs_dir)
+    
+    var full_path := ProjectSettings.globalize_path(save_path)
+    var file := FileAccess.open(full_path, FileAccess.WRITE)
+    if file == null:
+        _panel.set_status("Cannot create file: " + save_path, true)
+        _polyhaven_state = "idle"
+        return
+    
+    file.store_buffer(body)
+    file.close()
+    _panel.set_status("Saved collection: " + save_path)
+    _polyhaven_state = "idle"
+
+
+func _on_polyhaven_fetch_requested(search: String, category: String, asset_type: String = "textures") -> void:
+    _panel.set_status("Fetching " + asset_type + " from Polyhaven...")
+    _init_polyhaven_http()
+    _polyhaven_state = "fetching_list"
+    
+    # Build URL with filters - asset type can be textures, hdris, models, or collections
+    var url := "%s/assets?t[]=%s" % [POLYHAVEN_API_URL, asset_type]
+    if not search.is_empty():
+        url += "&s=" + search.uri_encode()
+    if not category.is_empty():
+        url += "&c=" + category.uri_encode()
+    
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _polyhaven_http.request(url, headers, HTTPClient.METHOD_GET)
+
+
+func _on_polyhaven_fetch_collections_requested() -> void:
+    _panel.set_status("Fetching collections from Polyhaven...")
+    _init_polyhaven_http()
+    _polyhaven_state = "fetching_collections"
+    
+    var url := "%s/collections" % POLYHAVEN_API_URL
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _polyhaven_http.request(url, headers, HTTPClient.METHOD_GET)
+
+
+func _on_polyhaven_download_collection_requested(slug: String) -> void:
+    if slug.is_empty():
+        _panel.set_status("Select a collection from the list first.", true)
+        return
+    
+    _panel.set_status("Downloading collection: " + slug + "...")
+    _init_polyhaven_http()
+    _polyhaven_state = "fetching_collection_details"
+    
+    var url := "%s/collections/%s" % [POLYHAVEN_API_URL, slug]
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _polyhaven_http.request(url, headers, HTTPClient.METHOD_GET)
+
+
+func _handle_collections_response(response: Dictionary) -> void:
+    _polyhaven_textures.clear()
+    for slug: String in response.keys():
+        var collection: Dictionary = response[slug]
+        var name: String = collection.get("name", slug)
+        var description: String = collection.get("description", "")
+        _polyhaven_textures[slug] = {"name": name, "description": description, "scene": collection.get("scene", {})}
+    _polyhaven_state = "idle"
+    _panel.set_status("Found %d collections from Polyhaven" % _polyhaven_textures.size())
+    _panel.update_polyhaven_results(_polyhaven_textures)
+
+
+func _handle_collection_details_response(response: Dictionary) -> void:
+    # Get scene download URL
+    var scene: Dictionary = response.get("scene", {})
+    var download_url: String = ""
+    var format_type: String = ""
+    
+    if scene.has("blender"):
+        download_url = scene["blender"]
+        format_type = "blender"
+    elif scene.has("unreal"):
+        download_url = scene["unreal"]
+        format_type = "unreal"
+    
+    if download_url.is_empty():
+        _panel.set_status("No download available for this collection", true)
+        _polyhaven_state = "idle"
+        return
+    
+    _panel.set_status("Downloading scene file...")
+    _init_polyhaven_http()
+    _polyhaven_state = "downloading_collection"
+    _current_download["url"] = download_url
+    _current_download["format"] = format_type
+    
+    var headers := PackedStringArray([
+        "User-Agent: %s" % POLYHAVEN_USER_AGENT,
+    ])
+    _polyhaven_http.request(download_url, headers, HTTPClient.METHOD_GET)

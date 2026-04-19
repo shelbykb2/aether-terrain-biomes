@@ -435,6 +435,81 @@ text = "Set Cliff"
 layout_mode = 2
 text = "Import All Textures & Assign to Biomes"
 
+[node name="ImportCollectionButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Import Local Collection"
+
+[node name="PolyhavenLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Polyhaven Online Textures"
+
+[node name="PolyhavenSearchGrid" type="GridContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+columns = 2
+
+[node name="PolyhavenSearchLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenSearchGrid"]
+layout_mode = 2
+text = "Search"
+
+[node name="PolyhavenSearchEdit" type="LineEdit" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenSearchGrid"]
+layout_mode = 2
+placeholder_text = "e.g. brick, wood, concrete..."
+
+[node name="PolyhavenCategoryLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenSearchGrid"]
+layout_mode = 2
+text = "Category"
+
+[node name="PolyhavenCategoryOption" type="OptionButton" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenSearchGrid"]
+layout_mode = 2
+
+[node name="PolyhavenTypeLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Asset Type"
+
+[node name="PolyhavenTypeOption" type="OptionButton" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+
+[node name="PolyhavenButtons" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+
+[node name="FetchPolyhavenButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fetch Textures"
+
+[node name="DownloadPolyhavenButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Download Selected"
+
+[node name="OpenBrowserButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Open in Browser"
+
+[node name="PolyhavenResultList" type="ItemList" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 140)
+
+[node name="PolyhavenPreviewPanel" type="HBoxContainer" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+
+[node name="PolyhavenPreviewLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenPreviewPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Preview"
+
+[node name="PolyhavenPreviewImage" type="TextureRect" parent="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenPreviewPanel"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PolyhavenInfoLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Select a texture and click Download"
+
 [node name="SpawnLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Advanced"]
 layout_mode = 2
 text = "Selected Biome Assets"
@@ -599,6 +674,12 @@ text = "Remove Asset Entry"
 [connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons/AssignDetailTextureButton" to="." method="_on_assign_detail_texture_button_pressed"]
 [connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/TextureAssignButtons/AssignCliffTextureButton" to="." method="_on_assign_cliff_texture_button_pressed"]
 [connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/ImportAllTexturesAssignButton" to="." method="_on_import_all_textures_assign_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/ImportCollectionButton" to="." method="_on_import_collection_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenButtons/FetchPolyhavenButton" to="." method="_on_fetch_polyhaven_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenButtons/DownloadPolyhavenButton" to="." method="_on_download_polyhaven_button_pressed"]
+[connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Simple/OpenBrowserButton" to="." method="_on_open_browser_button_pressed"]
+[connection signal="item_selected" from="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenResultList" to="." method="_on_polyhaven_result_item_selected"]
+[connection signal="text_changed" from="Margin/Scroll/RootVBox/Tabs/Simple/PolyhavenSearchGrid/PolyhavenSearchEdit" to="." method="_on_polyhaven_search_text_changed"]
 
 [connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/ImportedRootButton" to="." method="_on_imported_root_button_pressed"]
 [connection signal="pressed" from="Margin/Scroll/RootVBox/Tabs/Advanced/QuickAssetRoots/PropsRootButton" to="." method="_on_props_root_button_pressed"]
