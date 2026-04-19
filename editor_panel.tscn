@@ -433,11 +433,15 @@ text = "Set Cliff"
 
 [node name="ImportAllTexturesAssignButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
 layout_mode = 2
-text = "Import All Textures & Assign to Biomes"
+text = "Import Terrain Textures"
 
 [node name="ImportCollectionButton" type="Button" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
 layout_mode = 2
-text = "Import Local Collection"
+text = "Import Asset Models"
+
+[node name="ImportLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
+layout_mode = 2
+text = "Local Import"
 
 [node name="PolyhavenLabel" type="Label" parent="Margin/Scroll/RootVBox/Tabs/Simple"]
 layout_mode = 2
