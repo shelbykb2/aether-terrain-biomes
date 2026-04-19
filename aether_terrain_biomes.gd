@@ -334,14 +334,6 @@ func _import_and_assign_textures_to_biomes(terrain: Node, texture_root: String) 
     # Scan for PBR texture sets
     var pbr_sets: Array[Dictionary] = _scan_pbr_texture_sets(texture_root)
     
-    # Debug: print what was found
-    print("=== TEXTURE SCAN DEBUG ===")
-    print("Texture root: " + texture_root)
-    print("PBR sets found: " + str(pbr_sets.size()))
-    for i in range(pbr_sets.size()):
-        print("Set " + str(i) + ": " + str(pbr_sets[i].keys()))
-    print("========================")
-    
     if pbr_sets.is_empty():
         # Create default placeholder textures if none found
         return _create_default_placeholder_textures(assets, _biomes)
