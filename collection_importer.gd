@@ -8,7 +8,7 @@ const ASSETS_DIR := "res://assets"
 const MODELS_SUBDIR := "models"
 const SCENERY_SUBDIR := "scenery"
 
-const MODEL_EXTS := ["glb", "gltf", "obj", "fbx", "blend"]  # .blend requires Blender installed
+const MODEL_EXTS := ["glb", "gltf", "obj", "fbx", "blend"]  # .blend works if Blender is installed
 const TEXTURE_EXTS := ["png", "jpg", "jpeg", "webp", "exr", "tga"]
 
 const ALBEDO_PATS := ["_albedo", "_diffuse", "_diff", "_basecolor", "_color"]
