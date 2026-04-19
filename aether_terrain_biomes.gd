@@ -543,6 +543,12 @@ func _scan_pbr_texture_sets(root_path: String) -> Array[Dictionary]:
     # Convert to array, prioritizing sets with albedo (or any base color like _diff)
     for key: String in base_names.keys():
         var set_data: Dictionary = base_names[key]
+        # Normalize: rename diffuse/color to albedo for packer compatibility
+        if set_data.has("diffuse") and not set_data.has("albedo"):
+            set_data["albedo"] = set_data["diffuse"]
+        if set_data.has("color") and not set_data.has("albedo"):
+            set_data["albedo"] = set_data["color"]
+        
         # Accept if has albedo OR diff OR color (any base color map)
         if set_data.has("albedo") or set_data.has("diffuse") or set_data.has("color"):
             sets.append(set_data)
