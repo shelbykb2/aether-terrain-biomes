@@ -409,21 +409,41 @@ func _import_and_assign_textures_to_biomes(terrain: Node, texture_root: String) 
 
 
 func _pack_textures_pair(rgb_path: String, a_path: String, output_folder: String, base_name: String) -> String:
-    # Load RGB texture with error handling
-    var rgb_res: Resource = null
+    # Load RGB texture - try Image first, then Texture2D as fallback
+    var rgb_img: Image = null
+    
     if not rgb_path.is_empty() and ResourceLoader.exists(rgb_path):
-        rgb_res = ResourceLoader.load(rgb_path, "Image", ResourceLoader.CACHE_MODE_IGNORE)
-    var rgb_img: Image = rgb_res as Image
-    if rgb_img == null or rgb_img.get_width() == 0:
-        push_warning("Skipping texture (cannot load): " + rgb_path)
-        return ""
+        # Try loading as Image
+        var rgb_res: Resource = ResourceLoader.load(rgb_path, "Image", ResourceLoader.CACHE_MODE_IGNORE)
+        rgb_img = rgb_res as Image
+        
+        # If failed, try loading as Texture2D and get image from it
+        if rgb_img == null or rgb_img.get_width() == 0:
+            var tex_res: Texture2D = ResourceLoader.load(rgb_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+            if tex_res != null:
+                var img: Image = tex_res.get_image()
+                if img != null and img.get_width() > 0:
+                    rgb_img = img
+        
+        if rgb_img == null or rgb_img.get_width() == 0:
+            push_warning("Skipping texture (cannot load): " + rgb_path)
+            return ""
 
+    # Load alpha/displacement texture
     var a_img: Image = null
     if not a_path.is_empty() and ResourceLoader.exists(a_path):
         var a_res: Resource = ResourceLoader.load(a_path, "Image", ResourceLoader.CACHE_MODE_IGNORE)
         a_img = a_res as Image
+        
         if a_img == null or a_img.get_width() == 0:
-            push_warning("Skipping alpha texture (cannot load): " + a_path)
+            var tex_res: Texture2D = ResourceLoader.load(a_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+            if tex_res != null:
+                var img: Image = tex_res.get_image()
+                if img != null and img.get_width() > 0:
+                    a_img = img
+        
+        if a_img == null or a_img.get_width() == 0:
+            # Silent skip for missing optional textures
             a_img = null
 
     # Create packed image: RGB + A
